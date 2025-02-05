@@ -4,178 +4,69 @@
 
 <style>
 table {
-border-collapse: collapse;
+    border-collapse: collapse;
 }
 
 table, th, td {
-border: 1px solid black;
+    border: 1px solid black;
 }
 
 th, td {
-padding: 5px;
-text-align: left;
+    padding: 5px;
+    text-align: left;
 }
-
-
 </style>
-	
-	
 </head>
-
-
-
 <body>
 
 
+Ваш IP-адрес:
+<h4><div id="ipAddress">Загрузка...</div></h4> 
 
-  
+User-Agent:
+<h4><div id="userAgent"></div></h4> 
 
-<div id="output1">
-    <h4>architecture bitness model platformVersion uaFullVersion fullVersionList</h4>
-</div>
 
-<div id="output2"></div>
+<br>
 <br>
 
-<script>
-    // Задаем значения для "zw"
-    var zw = "architecture bitness model platformVersion uaFullVersion fullVersionList".split(" ");
+    <h4>architecture, bitness, model, platformVersion, uaFullVersion, fullVersionList</h4>
+    <div id="output"></div>
+    
+    <table id="outputTable"></table>
+    
+    <script>
+        // Вывод IP-адреса
+        fetch('https://api64.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('ipAddress').textContent = data.ip;
+            })
+            .catch(error => {
+                document.getElementById('ipAddress').textContent = 'Ошибка получения IP';
+            });
 
-    // Вызываем метод "getHighEntropyValues" и обрабатываем результат
-    navigator.userAgentData.getHighEntropyValues(zw).then(function(values) {
-        // Полученные значения можно вывести в элемент с id "output2"
-        document.getElementById('output2').innerHTML = JSON.stringify(values, null, 0);
-
-    });
-</script>
-
-
-
-
-
-
-
-
-
-
-<table id="outputTable">
-
-</table>
-
-<script>
-
-
-
-// Функция для обработки массива
-function processArray(array) {
-    var arrayString = '';
-    for (var i = 0; i < array.length; i++) {
-        var item = array[i];
-        if (typeof item === 'object') {
-            for (var prop in item) {
-                if (item.hasOwnProperty(prop)) {
-                    arrayString += '"' + prop + '": ' + JSON.stringify(item[prop]) + ', ';
-                }
-            }
-        } else {
-            arrayString += JSON.stringify(item);
+        // Вывод User-Agent
+        document.getElementById('userAgent').textContent = navigator.userAgent;
+        
+        // Получение данных userAgentData
+        if (navigator.userAgentData) {
+            let fields = ["architecture", "bitness", "model", "platformVersion", "uaFullVersion", "fullVersionList"];
+            
+            navigator.userAgentData.getHighEntropyValues(fields).then(values => {
+                document.getElementById('output').textContent = JSON.stringify(values, null, 2);
+                
+                let table = document.getElementById('outputTable');
+                
+                Object.entries(values).forEach(([key, value]) => {
+                    let row = table.insertRow();
+                    let cell1 = row.insertCell(0);
+                    let cell2 = row.insertCell(1);
+                    cell1.textContent = key;
+                    cell2.textContent = Array.isArray(value) ? JSON.stringify(value) : value;
+                });
+            });
         }
-        if (i < array.length - 1) {
-            arrayString += ', ';
-        }
-    }
-    return arrayString;
-}
-
-
-
-
-var zw = "architecture bitness model platformVersion uaFullVersion fullVersionList".split(" ");
-
-navigator.userAgentData.getHighEntropyValues(zw).then(function(values) {
-    var table = document.getElementById('outputTable');
-
-    // Функция для добавления строки в таблицу
-    function addTableRow(property, value) {
-        var row = table.insertRow(-1);
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        cell1.innerHTML = property;
-        cell2.innerHTML = value;
-    }
-
-    // Функция для обработки массива
-    function processArray(array) {
-        var arrayString = '';
-        for (var i = 0; i < array.length; i++) {
-            var item = array[i];
-            if (typeof item === 'object') {
-                for (var prop in item) {
-                    if (item.hasOwnProperty(prop)) {
-                        arrayString += '"' + item[prop] + '"';
-                        if (i < array.length - 1 || prop !== 'version') {
-                            arrayString += ', ';
-                        }
-                    }
-                }
-            } else {
-                arrayString += JSON.stringify(item);
-            }
-        }
-        return arrayString;
-    }
-
-    // Перебираем свойства и добавляем их в таблицу
-    for (var prop in values) {
-        if (values.hasOwnProperty(prop)) {
-            var propValue = values[prop];
-
-            if (Array.isArray(propValue)) {
-                addTableRow(prop, processArray(propValue));
-            } else if (typeof propValue === 'object') {
-                addTableRow(prop, processObject(propValue));
-            } else {
-                addTableRow(prop, propValue);
-            }
-        }
-    }
-
-}).catch(function(error) {
-    console.log('Error: ' + error);
-});
-
-
-
-
-
-
-
-
-	
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- </body>
+    </script>
+</body>
 </html>
